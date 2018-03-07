@@ -10,4 +10,13 @@ $RECYCLE.BIN/
 *.lnk
 
 #python sourcecode
-py/
+MATLAB/
+py/.idea/
+py/bc
+py/data
+py/result
+py/src
+
+#etc
+*.xlsx
+*.docx
