@@ -15,7 +15,7 @@ py/.idea/
 py/bc
 py/data
 py/result
-py/src
+py/src/__pycache__/
 
 #etc
 *.xlsx
