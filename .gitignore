@@ -13,7 +13,8 @@ $RECYCLE.BIN/
 MATLAB/
 py/.idea/
 py/bc
-py/data
+py/data/*
+!py/data/test
 py/result
 py/src/__pycache__/
 
