@@ -13,7 +13,9 @@ $RECYCLE.BIN/
 MATLAB/
 src/.idea/
 src/data/*
-!src/data/HLMN/hlmn.txt
+!src/data/HLMN
+src/data/HLMN/*
+!src/data/HLMN/*.txt
 src/result/*
 
 
