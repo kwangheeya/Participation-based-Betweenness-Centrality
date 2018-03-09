@@ -11,12 +11,11 @@ $RECYCLE.BIN/
 
 #python sourcecode
 MATLAB/
-py/.idea/
-py/bc
-py/data/*
-!py/data/test
-py/result
-py/src/__pycache__/
+src/.idea/
+src/data/*
+!src/data/HLMN/hlmn.txt
+src/result/*
+
 
 #etc
 *.xlsx
