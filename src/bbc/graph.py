@@ -74,6 +74,7 @@ class Bhypergraph(Graph):
     def __init__(self, filepath=None):
         self.n = 0
         self.e = []
+        self.fstar = None
         if filepath:
             self.load(filepath)
 

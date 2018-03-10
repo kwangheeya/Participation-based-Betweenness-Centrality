@@ -1,15 +1,15 @@
 import sys
-from bbc import Bhypergraph, Graph, OBC
+from bbc import OBC, BBC
 
 
-def get_bcpath(filepath, bcoption, compute_opt='s', eps=0.01):
+def get_bcpath(filepath, bcoption, eps=0.01):
     filename = filepath.split('/')[-1]
     bc_path = 'result/bc/'
     if bcoption.lower() == 'slbbc':
         s_filename = filename.split('.')
-        bc_path += 'slBBC_' + s_filename[0] + '_' + str(eps).split('.')[-1]+'.'+s_filename[1]
+        bc_path += 'SLBBC_' + s_filename[0] + '_' + str(eps).split('.')[-1]+'.'+s_filename[1]
     else:
-        bc_path += bcoption + '_' + filename
+        bc_path += bcoption.upper() + '_' + filename
     return bc_path
 
 
@@ -21,8 +21,19 @@ def compute_obc(filepath):
     obc.store_bc(bc_path)
 
 
-def compute_bbc(filepath, compute_opt='e', epsilons=[0.01], etas=[0.1]):
-    bhyper = Bhypergraph(filepath)
+def compute_bbc(filepath, bcoption='bbc', epsilons=[0.01], etas=[0.1]):
+    bbc = BBC(bcoption=bcoption)
+    bbc.load_graph(filepath)
+    if bcoption == 'slbbc':
+        for eps in epsilons:
+            for eta in etas:
+                bbc.compute(eps=eps, eta=eta)
+                bc_path = get_bcpath(filepath, bcoption, eps=eps)
+                bbc.store_bc(bc_path)
+    else:
+        bbc.compute()
+        bc_path = get_bcpath(filepath, bcoption)
+        bbc.store_bc(bc_path)
 
 
 if __name__ == '__main__':
@@ -30,10 +41,11 @@ if __name__ == '__main__':
     
     [bc option] = obc | bbc | lbbc | slbbc
     
-    Example: python compute_bc.py data/hlmn/hlmn.txt obc
-    Example: python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01
-    Example: python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01,0.005
-    Example: python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01 0.1'''
+    Examples: 
+        python compute_bc.py data/hlmn/hlmn.txt obc
+        python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01
+        python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01,0.005
+        python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01 0.1'''
 
     inCommand = sys.argv[1:]
     filepath = ''
@@ -41,13 +53,13 @@ if __name__ == '__main__':
         filepath = inCommand[0]
 
     if len(inCommand) >= 2:
-        if inCommand[1] == 'obc':
+        if inCommand[1].lower() == 'obc':
             compute_obc(filepath)
-        elif inCommand[1] == 'bbc':
-            compute_bbc(filepath, compute_opt='e')
-        elif inCommand[1] == 'lbbc':
-            compute_bbc(filepath, compute_opt='l')
-        elif inCommand[1] == 'slbbc':
+        elif inCommand[1].lower() == 'bbc':
+            compute_bbc(filepath, bcoption='bbc')
+        elif inCommand[1].lower() == 'lbbc':
+            compute_bbc(filepath, bcoption='lbbc')
+        elif inCommand[1].lower() == 'slbbc':
             if len(inCommand) >= 3:
                 temp = inCommand[2].split(',')
                 epsilons = []
@@ -58,10 +70,10 @@ if __name__ == '__main__':
                     etas = []
                     for eta in etas:
                         etas.append(float(eta))
-                    compute_bbc(filepath, compute_opt='s', epsilons=epsilons, etas=etas)
+                    compute_bbc(filepath, bcoption='slbbc', epsilons=epsilons, etas=etas)
                 else:
-                    compute_bbc(filepath, compute_opt='s', epsilons=epsilons)
+                    compute_bbc(filepath, bcoption='slbbc', epsilons=epsilons)
             else:
-                compute_bbc(filepath, compute_opt='s')
+                compute_bbc(filepath, bcoption='slbbc')
     else:
         print(usage)
