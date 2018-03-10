@@ -8,6 +8,7 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+*.bat
 
 #python sourcecode
 MATLAB/

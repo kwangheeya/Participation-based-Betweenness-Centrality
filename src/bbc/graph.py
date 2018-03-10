@@ -1,5 +1,5 @@
-from contextlib import contextmanager
 from collections import deque
+from .utils import fopen
 
 
 class Graph:
@@ -9,20 +9,8 @@ class Graph:
         if filepath:
             self.load(filepath)
 
-    @classmethod
-    @contextmanager
-    def _fopen(cls, filepath, mode='r'):
-        try:
-            f = open(filepath, mode)
-            print('+ Open file [{0}]'.format(filepath))
-            yield f
-        except IOError as err:
-            print('- Error: can\'t find [{0}] or read data ({1})'.format(filepath, err))
-        finally:
-            f.close()
-
     def load(self, filepath):
-        with self._fopen(filepath) as file:
+        with fopen(filepath) as file:
             line = file.readline()
             self.n = int(line[:-1])
             for line in file:
@@ -103,7 +91,7 @@ class Bhypergraph(Graph):
         return e
 
     def load(self, filepath):
-        with self._fopen(filepath) as file:
+        with fopen(filepath) as file:
             line = file.readline()
             self.n = int(line[:-1])
             for line in file:
