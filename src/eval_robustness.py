@@ -1,5 +1,5 @@
 import sys
-from bbc import OBC, BBC, fopen
+from bbc import OBC, BBC, fopen, Graph
 from compute_bc import get_bcpath
 import progressbar
 
@@ -18,11 +18,12 @@ def get_attackpath(filepath, bcoption, eps=0.01):
 def eval_robustness(filepath, bcoption='slbbc', epsilons=[0.01], etas=[0.1]):
     bc = None
     if bcoption == 'obc':
-        bc = OBC()
+        g = Graph()
+        g.load(filepath, load_op='keep')
+        bc = OBC(g)
     else:
         bc = BBC(bcoption=bcoption)
-
-    bc.load_graph(filepath)
+        bc.load_graph(filepath)
 
     if bcoption == 'slbbc':
         for eps in epsilons:
@@ -53,17 +54,17 @@ def _attack_robustness(bc, attackpath, eps=0.01, eta=0.1):
 
         possible_nodes = []
         if len(removed_nodes) > 0:
-            for nid in removed_nodes[:-1]:
-                bc.graph.remove_node(nid)
+            bc.graph.remove_nodes(removed_nodes[:-1])
             bc.bc = None
             inodes, possible_nodes = delete_node(bc, removed_nodes[-1])
             print('\t>Initially removed nodes:', len(removed_nodes))
+            print('\t>lcc', bc.graph.lcc())
         if f.tell() == 0:
             f.write('lcc\tinodes\tindex\tbc_val\n')
 
-
-        bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength, widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                            progressbar.Timer()])
+        bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength,
+                                      widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Timer()],
+                                      redirect_stdout=True)
         bar.start()
         for i in range(n-len(removed_nodes)):
             if not bc.bc:
@@ -84,8 +85,7 @@ def _attack_robustness(bc, attackpath, eps=0.01, eta=0.1):
 
 
 def delete_node(bc, nid):
-    bc.graph.remove_node(nid)
-    e = bc.graph.e
+    bc.graph.remove_nodes({nid})
     n = bc.graph.n
     non_inodes = bc.graph.find_nodes_having_edges()
     n_inodes = n - len(non_inodes)
