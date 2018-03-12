@@ -10,7 +10,7 @@ Code for the papers
 ## Requirement
 * [Numpy](http://www.numpy.org/) package 
 
-## Data format
+## Data (B-hypergraph) format
 > The data used in this code are stored in folder 'src/data'.
 
 * In data file, the first line must indicate [the number of nodes].
@@ -18,10 +18,11 @@ Code for the papers
 * From the second line, each line indicates each hyperedge.
   * Each hyperedge <{a,b,c},{d}> is represented by a,b,c;d
   * We use semicolon(;) as the separator in each hyperedge
+  * Comma(,) is used to distinguish source nodes
 
 > Example data file
 
-	```
+```
 	9
 	0;1
 	0;2
@@ -32,4 +33,4 @@ Code for the papers
 	2,7;4
 	4,7;8
 	7;8
-	```
+```
