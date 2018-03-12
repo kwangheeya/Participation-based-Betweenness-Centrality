@@ -58,7 +58,7 @@ class OBC(BC):
         n = self.graph.n
         maxval = n//100 if n > 100 else n
         bar = progressbar.ProgressBar(maxval=maxval+1, widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                                                progressbar.Percentage(), ' ', progressbar.ETA()])
+                                                                progressbar.Percentage(), ' ', progressbar.Timer()])
         if print_op:
             bar.start()
         self.bc = [0.0] * n
@@ -134,7 +134,7 @@ class BBC(BC):
         n = self.graph.n
         maxval = n//100 if n > 100 else n
         bar = progressbar.ProgressBar(max_value=maxval+1, widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                            progressbar.Percentage(), ' ', progressbar.ETA()], redirect_stdout=True)
+                                            progressbar.Percentage(), ' ', progressbar.Timer()], redirect_stdout=True)
         if print_op:
             bar.start()
 
@@ -382,7 +382,7 @@ class BBC(BC):
         n = self.graph.n
         maxval = n//100 if n > 100 else n
         bar = progressbar.ProgressBar(max_value=maxval+1, widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                            progressbar.Percentage(), ' ', progressbar.ETA()], redirect_stdout=True)
+                                            progressbar.Percentage(), ' ', progressbar.Timer()], redirect_stdout=True)
         if print_op:
             bar.start()
 

@@ -61,9 +61,9 @@ def _attack_robustness(bc, attackpath, eps=0.01, eta=0.1):
         if f.tell() == 0:
             f.write('lcc\tinodes\tindex\tbc_val\n')
 
-        maxval = n-len(removed_nodes)
-        bar = progressbar.ProgressBar(max_value=maxval, widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                            progressbar.Percentage(), ' ', progressbar.AdaptiveETA()])
+
+        bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength, widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                            progressbar.Timer()])
         bar.start()
         for i in range(n-len(removed_nodes)):
             if not bc.bc:
