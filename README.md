@@ -14,12 +14,16 @@ Code for the papers
 > The data used in this code are stored in folder 'src/data'.
 
 * In data file, the first line must indicate [the number of nodes].
+
 * From the second line, each line indicates each hyperedge.
+
 ** Each hyperedge <{a,b,c},{d}> is represented by a,b,c;d
+
 ** We use semicolon(;) as the separator in each hyperedge
 
 > Example data file
-```
+
+~~~
 9
 0;1
 0;2
@@ -30,4 +34,4 @@ Code for the papers
 2,7;4
 4,7;8
 7;8
-```
+~~~
