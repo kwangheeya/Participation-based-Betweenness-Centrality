@@ -1,25 +1,22 @@
-from common import get_function_name, debug_print, read_hypergraph, read_bc
 import sys
-import time
-
-def write_result(u, val, lcc, method, dataFile):
-    CC_file = ''
-    temp = dataFile.split('.')
-    if method == 'r':
-        CC_file = '../result/r_' + temp[0] + '_' + method + '.' + temp[1]
-    elif method == 's':
-        temp2 = temp[0].split('_')
-        CC_file = '../result/r_' + temp2[0] + '_' +  method + '_' + temp2[1] + '.' + temp[1]
-    elif method == 'v1' or method == 'v2':
-        CC_file = '../result/r_' + temp[0] + '.' + temp[1]
-
-    CC_fp = open(CC_file, 'a')
-    CC_fp.write(str(u) + "\t" + str(val) + "\t" + str(lcc) + "\n")
-    CC_fp.close()
+from bbc import BBC, fopen
+from compute_bc import get_bcpath
+import progressbar
 
 
-def bfs_hyperpath(x,A,e,fstar):
-    reachable_nodes = set([x])
+def get_reachpath(filepath, bcoption, eps=0.01):
+    filename = filepath.split('/')[-1]
+    _path = 'result/reachability/r_'
+    if bcoption.lower() == 'slbbc':
+        s_filename = filename.split('.')
+        _path += 'SLBBC_' + s_filename[0] + '_' + str(eps).split('.')[-1]+'.'+s_filename[1]
+    else:
+        _path += bcoption.upper() + '_' + filename
+    return _path
+
+
+def bfs_hyperpath(x, A, e, fstar):
+    reachable_nodes = {x}
     prev_n = len(reachable_nodes)
 
     remaining_hyperedges = set([edgeindex for edgeindex in range(len(e))])
@@ -48,97 +45,96 @@ def bfs_hyperpath(x,A,e,fstar):
     return reachable_nodes
 
 
-def countReachable(n, e, dataFile, method='r', lam=0, printFrequency=50, op=2):
-    debug_print('START [' + str(get_function_name()) + '] ', method, lam)
-    startTime = time.time()
-    bc = []
-    if method == 'v1' or method =='v2':
-        temp = (dataFile.split('/')[-1]).split('.')
-        dataFile = temp[0] + '_' + method + '.' + temp[1]
-        bc = read_bc("../bc/aBBC_" + dataFile, n)
-    elif method == 'r':
-        dataFile = dataFile.split('/')[-1]
-        bc = read_bc("../bc/OBC_" + dataFile, n)
-    elif method == 's':
-        temp = (dataFile.split('/')[-1]).split('.')
-        dataFile = temp[0] + '_' + str(lam).split('.')[-1] + '.' + temp[1]
-        bc = read_bc("../bc/sBBC_" + dataFile, n)
-
-    write_result('k', 'Satisfiable nodes', '', method, dataFile)
-
-
-    no_bstar_nodes = set([v for v in range(n)])
-    fstar = {}
-    for i, edge in enumerate(e):
-        for v in edge[0]:
-            if not (v in fstar):
-                fstar[v] = set()
-            fstar[v].add(i)
-        if edge[1] in no_bstar_nodes:
-            no_bstar_nodes.remove(edge[1])
-
-    if op == 1:
-        default_num_reachable_nodes = [0 for x in range(n)]
-        for x in range(n):
-            T_A = bfs_hyperpath(x, set(), e, fstar)
-            default_num_reachable_nodes[x] = len(T_A)
-
-        debug_print('\t compute for each node ' + str(time.time() - startTime))
-
-        sorted_index = sorted(range(len(bc)), key=lambda i: -bc[i])
-        for i in range(10):
-            end = int(len(sorted_index) * 0.01 * (i + 1))
-            A = set(sorted_index[:end])
-            num_addi_reachable_nodes = 0
-            for x in range(n):
-                T_A = bfs_hyperpath(x, A, e, fstar)
-                num_addi_reachable_nodes += (len(T_A) - default_num_reachable_nodes[x])/n
-            write_result((i+1)*1, num_addi_reachable_nodes, '', method, dataFile)
-            debug_print('\t top '+str((i+1)*1)+'% nodes ' + str(time.time() - startTime))
+def eval_reachability(filepath, bcoption='slbbc', epsilons=[0.01], etas=[0.1]):
+    bc = BBC()
+    bc.load_graph(filepath)
+    if bcoption == 'slbbc':
+        for eps in epsilons:
+            for eta in etas:
+                bc_path = get_bcpath(filepath, bcoption, eps=eps)
+                bc.load_bc(bc_path)
+                bc_sorted_idx = bc.sorted_index()
+                reachpath = get_reachpath(filepath, bcoption, eps=eps)
+                print('+ Start computing reachability in {0} with eps={1} eta={2}'.format(bcoption.upper(), eps, eta))
+                _compute_reachability(bc.graph, bc_sorted_idx, reachpath)
     else:
-        print('\t #no_bstar_nodes', len(no_bstar_nodes))
-        default_num_reachable_nodes = {}
-        i=0
+        bc_path = get_bcpath(filepath, bcoption)
+        bc.load_bc(bc_path)
+        bc_sorted_idx = bc.sorted_index()
+        reachpath = get_reachpath(filepath, bcoption)
+        print('+ Start computing reachability in {0}'.format(bcoption.upper()))
+        _compute_reachability(bc.graph, bc_sorted_idx, reachpath)
+
+
+def _compute_reachability(graph, bc_sorted_idx, reachpath, start=0, mode='w'):
+    n = graph.n
+    e = graph.e
+    fstar = graph.fstar
+    bstar_nodes = set()
+    for edge in e:
+        bstar_nodes.add(edge[1])
+    no_bstar_nodes = set([v for v in range(n) if v not in bstar_nodes])
+    print('\t>#no_bstar_nodes', len(no_bstar_nodes))
+    bar = progressbar.ProgressBar(maxval=len(no_bstar_nodes), widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                                          progressbar.Percentage(), ' ', progressbar.ETA()])
+    default_num_reachable_nodes = {}
+    for i, x in enumerate(no_bstar_nodes):
+        T_A = bfs_hyperpath(x, set(), e, fstar)
+        default_num_reachable_nodes[x] = len(T_A)
+        bar.update(i)
+    bar.finish()
+
+    maxval = 10
+    bar = progressbar.ProgressBar(maxval=maxval, widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                                          progressbar.Percentage(), ' ', progressbar.ETA()])
+    str_to_write = ''
+    for i in range(10):
+        end = int(n * 0.03 * (i + 1))
+        A = set(bc_sorted_idx[start:end])
+        num_addi_reachable_nodes = 0
         for x in no_bstar_nodes:
-            i += 1
-            T_A = bfs_hyperpath(x, set(), e, fstar)
-            default_num_reachable_nodes[x] = len(T_A)
-            if i % 10000 == 0:
-                debug_print('\t\t  '+str(i)+',' + str(time.time() - startTime))
-        print(sum([default_num_reachable_nodes[x] for x in default_num_reachable_nodes])/len(no_bstar_nodes))
-        debug_print('\t compute for each node ' + str(time.time() - startTime))
+            T_A = bfs_hyperpath(x, A, e, fstar)
+            num_addi_reachable_nodes += (len(T_A) - default_num_reachable_nodes[x]) / len(no_bstar_nodes)
+        str_to_write += str((i + 1) * 3) + '\t({0})\t'.format(len(A)) + str(num_addi_reachable_nodes) + '\n'
+        bar.update(i)
+    bar.finish()
 
-        sorted_index = sorted(range(len(bc)), key=lambda i: -bc[i])
-
-        for i in range(10):
-            end = int(len(sorted_index) * 0.03 * (i + 1))
-            A = set(sorted_index[:end])
-            num_addi_reachable_nodes = 0
-            for x in no_bstar_nodes:
-                T_A = bfs_hyperpath(x, A, e, fstar)
-                num_addi_reachable_nodes += (len(T_A) - default_num_reachable_nodes[x]) / len(no_bstar_nodes)
-            write_result((i+1)*3, num_addi_reachable_nodes, '', method, dataFile)
-            debug_print('\t top ' + str((i+1)*3) + '% nodes ' + str(time.time() - startTime))
-    endTime = time.time()
-    debug_print('> End. Time: ' + str(endTime - startTime))
-
-def reachability_main(dataFile='../data/test/test.txt', method='r', lams=[]):
-    for lam in reversed(lams):
-        n, e = read_hypergraph(dataFile)
-        countReachable(n, e, dataFile, method=method, lam=lam)
-
+    with fopen(reachpath, mode=mode) as f:
+        if mode == 'w':
+            f.write('k\t(#n)\t#addi. reachable nodes\n')
+        f.write(str_to_write)
 
 if __name__ == '__main__':
-    # usage: python attack.py [filenmae] [option]
-    # ex) python reachability.py ../data/test/test.txt v2
+    usage = '''usage: python eval_reachability.py [filepath] [bc option] [epsilons] [etas]
+
+    [bc option] = obc | bbc | lbbc | slbbc'''
+
     inCommand = sys.argv[1:]
+    filepath = ''
+    if len(inCommand) >= 1:
+        filepath = inCommand[0]
     if len(inCommand) >= 2:
-        if inCommand[1] == 'r':
-            reachability_main(dataFile=inCommand[0], method=inCommand[1], lams=[0])
-        elif inCommand[1] == 'v1' or inCommand[1] == 'v2':
-            reachability_main(dataFile=inCommand[0], method=inCommand[1], lams=[0])
-        elif inCommand[1] == 's' and len(inCommand) >= 3:
-            print(float(inCommand[2]))
-            reachability_main(dataFile=inCommand[0], method=inCommand[1], lams=[float(inCommand[2])])
+        if inCommand[1].lower() == 'obc':
+            eval_reachability(filepath, bcoption='obc')
+        elif inCommand[1].lower() == 'bbc':
+            eval_reachability(filepath, bcoption='bbc')
+        elif inCommand[1].lower() == 'lbbc':
+            eval_reachability(filepath, bcoption='lbbc')
+        elif inCommand[1].lower() == 'slbbc':
+            if len(inCommand) >= 3:
+                temp = inCommand[2].split(',')
+                epsilons = []
+                for eps in temp:
+                    epsilons.append(float(eps))
+                if len(inCommand) >= 4:
+                    temp = inCommand[3].split(',')
+                    etas = []
+                    for eta in etas:
+                        etas.append(float(eta))
+                    eval_reachability(filepath, bcoption='slbbc', epsilons=epsilons, etas=etas)
+                else:
+                    eval_reachability(filepath, bcoption='slbbc', epsilons=epsilons)
+            else:
+                eval_reachability(filepath, bcoption='slbbc')
     else:
-        reachability_main()
+        print(usage)

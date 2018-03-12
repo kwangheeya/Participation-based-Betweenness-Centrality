@@ -31,8 +31,17 @@ class Graph:
     def store(self):
         pass
 
-    def remove_edge(self, edge_dict):
-        pass
+    def remove_node(self, nid):
+        if nid in self.e:
+            self.e.pop(nid)
+        to_be_deleted = []
+        for src in self.e:
+            if nid in self.e[src]:
+                self.e[src].remove(nid)
+                if len(self.e[src]) == 0:
+                    to_be_deleted.append(src)
+        for src in to_be_deleted:
+            self.e.pop(src)
 
     def make_undir(self):
         e = {}
@@ -77,7 +86,7 @@ class Bhypergraph(Graph):
     def __init__(self, filepath=None):
         self.n = 0
         self.e = []
-        self.fstar = None
+        self.fstar = {}
         if filepath:
             self.load(filepath)
 
@@ -109,5 +118,23 @@ class Bhypergraph(Graph):
                     target = int(text)
                     if len(source) > 0 and not (target in source and len(source) == 1):
                         self.e.append((source, target))
+                        for v in source:
+                            if not (v in self.fstar):
+                                self.fstar[v] = set()
+                            self.fstar[v].add(len(self.e)-1)
         print('\t>Load #nodes: {0}, #hyperedges : {1}'.format(self.n, len(self.e)))
 
+    def remove_node(self, nid):
+        e = []
+        for edge in self.e:
+            if (nid in edge[0]) or nid == edge[1]:
+                pass
+            else:
+                e.append(edge)
+        self.e = e
+        self.fstar = {}
+        for i, edge in enumerate(e):
+            for v in edge[0]:
+                if not (v in self.fstar):
+                    self.fstar[v] = set()
+                self.fstar[v].add(i)

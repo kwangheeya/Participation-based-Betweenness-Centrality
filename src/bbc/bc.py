@@ -41,10 +41,10 @@ class BC:
         return sorted(range(len(bc)), key=bc.__getitem__, reverse=reverse)
 
     def load_graph(self, filepath):
-        pass
+        raise NotImplementedError
 
     def store_graph(self, filepath):
-        pass
+        raise NotImplementedError
 
 
 class OBC(BC):
@@ -123,14 +123,6 @@ class BBC(BC):
     def load_graph(self, filepath):
         self.graph = Bhypergraph(filepath)
         self.bc = [0.0] * self.graph.n
-        self.graph.fstar = {}
-        fstar = self.graph.fstar
-
-        for i, edge in enumerate(self.graph.e):
-            for v in edge[0]:
-                if not (v in fstar):
-                    fstar[v] = set()
-                fstar[v].add(i)
 
     def compute(self, print_op=True, possible_nodes=[], eps=0.01, eta=0.1):
         assert self.graph, 'No graph'

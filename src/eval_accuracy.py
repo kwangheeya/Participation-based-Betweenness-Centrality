@@ -6,12 +6,12 @@ import statistics
 def precisionAtN(true_list, sample_list, n):
     true_index_list = sorted(range(len(true_list)), key=true_list.__getitem__, reverse=True)[:n]
     sample_index_list = sorted(range(len(sample_list)), key=sample_list.__getitem__, reverse=True)[:n]
-    #print(true_index_list, sample_index_list)
     return len(set(true_index_list).intersection(sample_index_list)) / n
 
 
 def compute_accuracy():
-    filepaths = ["data/HLMN/hlmn.txt", "data/PID/pid.txt","data/DBLP/dblp5.txt","data/DBLP/dblp10.txt","data/CODA/kegg.txt"]
+    filepaths = ["data/HLMN/hlmn.txt", "data/PID/pid.txt", "data/DBLP/dblp5.txt", "data/DBLP/dblp10.txt",
+                 "data/CODA/kegg.txt"]
     for filepath in filepaths[:3]:
         bbc = BBC()
         bbc.load_graph(filepath)
