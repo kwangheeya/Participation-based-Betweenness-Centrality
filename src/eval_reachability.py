@@ -75,8 +75,9 @@ def _compute_reachability(graph, bc_sorted_idx, reachpath, start=0, mode='w'):
         bstar_nodes.add(edge[1])
     no_bstar_nodes = set([v for v in range(n) if v not in bstar_nodes])
     print('\t>#no_bstar_nodes', len(no_bstar_nodes))
-    bar = progressbar.ProgressBar(maxval=len(no_bstar_nodes), widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                                          progressbar.Percentage(), ' ', progressbar.Timer()])
+    bar = progressbar.ProgressBar(maxval=len(no_bstar_nodes),
+                                  widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                           progressbar.Percentage(), ' ', progressbar.Timer()])
     bar.start()
     default_num_reachable_nodes = {}
     for i, x in enumerate(no_bstar_nodes):
@@ -86,8 +87,9 @@ def _compute_reachability(graph, bc_sorted_idx, reachpath, start=0, mode='w'):
     bar.finish()
 
     maxval = 10
-    bar = progressbar.ProgressBar(maxval=maxval, widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                                          progressbar.Percentage(), ' ', progressbar.Timer()])
+    bar = progressbar.ProgressBar(maxval=maxval,
+                                  widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                           progressbar.Percentage(), ' ', progressbar.Timer()])
     bar.start()
     str_to_write = ''
     for i in range(10):
