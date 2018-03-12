@@ -57,8 +57,9 @@ class OBC(BC):
         print_status('+ Start computing OBC', print_op=print_op)
         n = self.graph.n
         maxval = n//100 if n > 100 else n
-        bar = progressbar.ProgressBar(maxval=maxval+1, widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                                                progressbar.Percentage(), ' ', progressbar.Timer()])
+        bar = progressbar.ProgressBar(maxval=maxval+1,
+                                      widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                               progressbar.Percentage(), ' ', progressbar.Timer()])
         if print_op:
             bar.start()
         self.bc = [0.0] * n
