@@ -57,9 +57,11 @@ class OBC(BC):
         print_status('+ Start computing OBC', print_op=print_op)
         n = self.graph.n
         maxval = n//100 if n > 100 else n
-        bar = progressbar.ProgressBar(max_value=maxval+1,
-                                      widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                               progressbar.Percentage(), ' ', progressbar.Timer()])
+        bar = None
+        if print_op:
+            bar = progressbar.ProgressBar(max_value=maxval+1,
+                                          widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                                   progressbar.Percentage(), ' ', progressbar.Timer()])
         if print_op:
             bar.start()
         self.bc = [0.0] * n
@@ -134,8 +136,12 @@ class BBC(BC):
             print_status('+ Start computing {0}'.format(self.bcoption.upper()), print_op=print_op)
         n = self.graph.n
         maxval = n//100 if n > 100 else n
-        bar = progressbar.ProgressBar(max_value=maxval+1, widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                            progressbar.Percentage(), ' ', progressbar.Timer()], redirect_stdout=True)
+        bar = None
+        if print_op:
+            bar = progressbar.ProgressBar(max_value=maxval+1,
+                                          widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                                   progressbar.Percentage(), ' ', progressbar.Timer()],
+                                          redirect_stdout=True)
         if print_op:
             bar.start()
 
@@ -382,8 +388,12 @@ class BBC(BC):
         print_status('+ Start computing LBBC from seed node {0}'.format(str(v)), print_op=print_op)
         n = self.graph.n
         maxval = n//100 if n > 100 else n
-        bar = progressbar.ProgressBar(max_value=maxval+1, widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                                            progressbar.Percentage(), ' ', progressbar.Timer()], redirect_stdout=True)
+        bar = None
+        if print_op:
+            bar = progressbar.ProgressBar(max_value=maxval+1,
+                                          widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                                   progressbar.Percentage(), ' ', progressbar.Timer()],
+                                          redirect_stdout=True)
         if print_op:
             bar.start()
 
