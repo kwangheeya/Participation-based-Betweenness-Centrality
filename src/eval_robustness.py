@@ -73,7 +73,7 @@ def _attack_robustness(bc, attackpath, eps=0.01, eta=0.1):
             lcc = bc.graph.lcc()
             str_to_write = '{0}\t{1}\t{2}\t{3}\n'.format(lcc, inodes, nid, bc_val)
             f.write(str_to_write)
-            bar.update(i)
+            bar.update(i+len(removed_nodes))
             if lcc == 1 or bc_val == 0:
                 break
             else:
