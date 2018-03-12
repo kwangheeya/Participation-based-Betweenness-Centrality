@@ -52,9 +52,6 @@ class OBC(BC):
         self.graph = Graph(filepath)
         self.bc = [0.0] * self.graph.n
 
-    def remove_edge(self, edgelist):
-        pass
-
     def compute(self, print_op=True):
         assert self.graph, 'No graph'
         print_status('+ Start computing OBC', print_op=print_op)

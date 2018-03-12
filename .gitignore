@@ -11,8 +11,10 @@ $RECYCLE.BIN/
 *.bat
 
 #python sourcecode
+*.pyc
 __pycache__
 MATLAB/
+src/analysis_kegg.py
 src/.idea/
 src/data/*
 !src/data/HLMN

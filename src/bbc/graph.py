@@ -31,6 +31,9 @@ class Graph:
     def store(self):
         pass
 
+    def remove_edge(self, edge_dict):
+        pass
+
     def make_undir(self):
         e = {}
         for u in self.e:
