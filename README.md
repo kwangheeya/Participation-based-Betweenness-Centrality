@@ -36,9 +36,7 @@ Code for the papers
 ```
 
 ## Usage
-
-	python compute_bc.py [filepath] [bc option] [epsilons] [etas]
-    
+	python compute_bc.py [filepath] [bc option] [epsilons] [etas]    
     [bc option] = obc | bbc | lbbc | slbbc
     
 > Examples: 

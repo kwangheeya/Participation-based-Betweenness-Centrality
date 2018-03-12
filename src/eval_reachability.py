@@ -77,6 +77,7 @@ def _compute_reachability(graph, bc_sorted_idx, reachpath, start=0, mode='w'):
     print('\t>#no_bstar_nodes', len(no_bstar_nodes))
     bar = progressbar.ProgressBar(maxval=len(no_bstar_nodes), widgets=[progressbar.Bar('=', '[', ']'), ' ',
                                                           progressbar.Percentage(), ' ', progressbar.ETA()])
+    bar.start()
     default_num_reachable_nodes = {}
     for i, x in enumerate(no_bstar_nodes):
         T_A = bfs_hyperpath(x, set(), e, fstar)
@@ -87,6 +88,7 @@ def _compute_reachability(graph, bc_sorted_idx, reachpath, start=0, mode='w'):
     maxval = 10
     bar = progressbar.ProgressBar(maxval=maxval, widgets=[progressbar.Bar('=', '[', ']'), ' ',
                                                           progressbar.Percentage(), ' ', progressbar.ETA()])
+    bar.start()
     str_to_write = ''
     for i in range(10):
         end = int(n * 0.03 * (i + 1))

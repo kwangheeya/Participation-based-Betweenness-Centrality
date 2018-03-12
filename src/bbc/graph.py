@@ -43,6 +43,12 @@ class Graph:
         for src in to_be_deleted:
             self.e.pop(src)
 
+    def find_nodes_having_edges(self):
+        non_inodes = set(self.e.keys())
+        for s in self.e.values():
+            non_inodes |= s
+        return non_inodes
+
     def make_undir(self):
         e = {}
         for u in self.e:
@@ -89,6 +95,13 @@ class Bhypergraph(Graph):
         self.fstar = {}
         if filepath:
             self.load(filepath)
+
+    def find_nodes_having_edges(self):
+        non_inodes = set()
+        for edge in self.e:
+            non_inodes |= edge[0]
+            non_inodes.add(edge[1])
+        return non_inodes
 
     def make_undir(self):
         e = {}

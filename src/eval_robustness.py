@@ -1,101 +1,129 @@
-from aBBC import bc_hyper_single
-from OBC import bc_simple
-from sBBC import sBBC_compute
-from common import get_function_name, debug_print, read_hypergraph, read_bc, lcc_size
 import sys
+from bbc import OBC, BBC, fopen
+from compute_bc import get_bcpath
+import progressbar
 
 
-def write_result(u, val, lcc, method, dataFile):
-    CC_file = ''
-    temp = dataFile.split('.')
-    if method == 'r':
-        CC_file = '../result/v_' + temp[0] + '_' + method + '.' + temp[1]
-    elif method == 's':
-        temp2 = temp[0].split('_')
-        CC_file = '../result/v_' + temp2[0] + '_' +  method + '_' + temp2[1] + '.' + temp[1]
+def get_attackpath(filepath, bcoption, eps=0.01):
+    filename = filepath.split('/')[-1]
+    _path = 'result/attack/v_'
+    if bcoption.lower() == 'slbbc':
+        s_filename = filename.split('.')
+        _path += 'SLBBC_' + s_filename[0] + '_' + str(eps).split('.')[-1]+'.'+s_filename[1]
     else:
-        CC_file = '../result/v_' + temp[0] + '.' + temp[1]
-
-    CC_fp = open(CC_file, 'a');
-    CC_fp.write(str(u) + "\t" + str(val) + "\t" + str(lcc) + "\n")
-    CC_fp.close()
+        _path += bcoption.upper() + '_' + filename
+    return _path
 
 
-def delete_node(n, e, bc):
-    maxIndex = bc.index(max(bc))
-    newE = ()
-    for edge in e:
-        if not (maxIndex in edge[0]) and maxIndex != edge[1]:
-            newE += (edge,)
-    n_inodes = 0
+def eval_robustness(filepath, bcoption='slbbc', epsilons=[0.01], etas=[0.1]):
+    bc = None
+    if bcoption == 'obc':
+        bc = OBC()
+    else:
+        bc = BBC(bcoption=bcoption)
 
-    non_inodes = set()
-    for edge in newE:
-        non_inodes |= edge[0]
-        non_inodes.add(edge[1])
+    bc.load_graph(filepath)
+
+    if bcoption == 'slbbc':
+        for eps in epsilons:
+            for eta in etas:
+                bc_path = get_bcpath(filepath, bcoption, eps=eps)
+                bc.load_bc(bc_path)
+                attackpath = get_attackpath(filepath, bcoption, eps=eps)
+                print('+ Start attack robustness in {0} with eps={1} eta={2}'.format(bcoption.upper(), eps, eta))
+                _attack_robustness(bc, attackpath, eps=eps, eta=eta)
+    else:
+        bc_path = get_bcpath(filepath, bcoption)
+        bc.load_bc(bc_path)
+        attackpath = get_attackpath(filepath, bcoption)
+        print('+ Start attack robustness in {0}'.format(bcoption.upper()))
+        _attack_robustness(bc, attackpath)
+
+
+def _attack_robustness(bc, attackpath, eps=0.01, eta=0.1):
+    n = bc.graph.n
+
+    with fopen(attackpath, mode='a+') as f:
+        removed_nodes = []
+        f.seek(0)
+        for line in f:
+            nid_str = line.split('\t')[2]
+            if nid_str.isdigit():
+                removed_nodes.append(int(nid_str))
+
+        possible_nodes = []
+        if len(removed_nodes) > 0:
+            for nid in removed_nodes[:-1]:
+                bc.graph.remove_node(nid)
+            bc.bc = None
+            inodes, possible_nodes = delete_node(bc, removed_nodes[-1])
+            print('\t>Initially removed nodes:', len(removed_nodes))
+        if f.tell() == 0:
+            f.write('lcc\tinodes\tindex\tbc_val\n')
+
+        maxval = n-len(removed_nodes)
+        bar = progressbar.ProgressBar(max_value=maxval, widgets=[progressbar.Bar('=', '[', ']'), ' ',
+                                            progressbar.Percentage(), ' ', progressbar.AdaptiveETA()])
+        bar.start()
+        for i in range(n-len(removed_nodes)):
+            if not bc.bc:
+                bc.compute(print_op=False, possible_nodes=possible_nodes, eps=eps, eta=eta)
+            nid = bc.sorted_index()[0]
+            bc_val = bc.bc[nid]
+            inodes, possible_nodes = delete_node(bc, nid)
+            lcc = bc.graph.lcc()
+            str_to_write = '{0}\t{1}\t{2}\t{3}\n'.format(lcc, inodes, nid, bc_val)
+            f.write(str_to_write)
+            bar.update(i)
+            if lcc == 1 or bc_val == 0:
+                break
+            else:
+                bc.bc = None
+
+        bar.finish()
+
+
+def delete_node(bc, nid):
+    bc.graph.remove_node(nid)
+    e = bc.graph.e
+    n = bc.graph.n
+    non_inodes = bc.graph.find_nodes_having_edges()
     n_inodes = n - len(non_inodes)
 
-    return maxIndex, bc[maxIndex], n_inodes, newE, list(non_inodes)
-
-
-def attack_vulnerability(n, e, dataFile, method='r', lam=0, printFrequency=50):
-    debug_print('START [' + str(get_function_name()) + '] ', method, lam)
-    if method == 'v1' or method =='v2':
-        temp = (dataFile.split('/')[-1]).split('.')
-        dataFile = temp[0] + '_' + method + '.' + temp[1]
-    elif method == 'r':
-        dataFile = dataFile.split('/')[-1]
-    elif method == 's':
-        temp = (dataFile.split('/')[-1]).split('.')
-        dataFile = temp[0] + '_' + str(lam).split('.')[-1] + '.' + temp[1]
-    write_result('index', 'bc_value', 'lcc\tinodes', method, dataFile)
-    val = 1
-    for i in range(n):
-        if i % printFrequency == 0:
-            debug_print('>', i)
-        bc = []
-
-        if method == 'r':
-            bc = bc_simple(n, e) if i > 0 else read_bc("../bc/OBC_" + dataFile, n)
-        elif method == 'v1' or method == 'v2':
-            bc = bc_hyper_single(n, e, op=method) if i > 0 else read_bc("../bc/aBBC_" + dataFile, n)
-        elif method == 's':
-            '''
-            if val + lam < 1:
-                eps = lam * (val + lam)
-            else:
-                eps = lam
-            '''
-            eps = lam
-            bc = sBBC_compute(n, e, possible_nodes=possible_nodes, eps=eps) if i > 0 else read_bc("../bc/sBBC_" + dataFile, n)
-
-        u, val, n_inodes, e, possible_nodes = delete_node(n, e, bc)
-        # print (bc_list,e)
-        # print e
-        lcc = lcc_size(n, e)
-        write_result(u, val, str(lcc) + '\t' + str(n_inodes), method, dataFile)
-        if lcc == 1 or val == 0:
-            break
-    debug_print('END [' + str(get_function_name()) + '] ')
-
-
-def attack_main(dataFile='../data/test/test.txt', method='r', lams=[]):
-    for lam in reversed(lams):
-        n, e = read_hypergraph(dataFile)
-        attack_vulnerability(n, e, dataFile, method=method, lam=lam)
+    return n_inodes, list(non_inodes)
 
 
 if __name__ == '__main__':
-    # usage: python attack.py [filenmae] [option]
-    # ex) python bc_hyper_single.py test.txt v1
+    usage = '''usage: python eval_robustness.py [filepath] [bc option] [epsilons] [etas]
+
+    [bc option] = obc | bbc | lbbc | slbbc'''
+
     inCommand = sys.argv[1:]
+    filepath = ''
+    if len(inCommand) >= 1:
+        filepath = inCommand[0]
     if len(inCommand) >= 2:
-        if inCommand[1] == 'r':
-            attack_main(dataFile=inCommand[0], method=inCommand[1], lams=[0])
-        elif inCommand[1] == 'v1' or inCommand[1] == 'v2':
-            attack_main(dataFile=inCommand[0], method=inCommand[1], lams=[0])
-        elif inCommand[1] == 's' and len(inCommand) >= 3:
-            print(float(inCommand[2]))
-            attack_main(dataFile=inCommand[0], method=inCommand[1], lams=[float(inCommand[2])])
+        if inCommand[1].lower() == 'obc':
+            eval_robustness(filepath, bcoption='obc')
+        elif inCommand[1].lower() == 'bbc':
+            eval_robustness(filepath, bcoption='bbc')
+        elif inCommand[1].lower() == 'lbbc':
+            eval_robustness(filepath, bcoption='lbbc')
+        elif inCommand[1].lower() == 'slbbc':
+            if len(inCommand) >= 3:
+                temp = inCommand[2].split(',')
+                epsilons = []
+                for eps in temp:
+                    epsilons.append(float(eps))
+                if len(inCommand) >= 4:
+                    temp = inCommand[3].split(',')
+                    etas = []
+                    for eta in etas:
+                        etas.append(float(eta))
+                    eval_robustness(filepath, bcoption='slbbc', epsilons=epsilons, etas=etas)
+                else:
+                    eval_robustness(filepath, bcoption='slbbc', epsilons=epsilons)
+            else:
+                eval_robustness(filepath, bcoption='slbbc')
     else:
-        attack_main()
+        print(usage)

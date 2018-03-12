@@ -52,7 +52,7 @@ class OBC(BC):
         self.graph = Graph(filepath)
         self.bc = [0.0] * self.graph.n
 
-    def compute(self, print_op=True):
+    def compute(self, print_op=True, possible_nodes=None, eps=None, eta=None):
         assert self.graph, 'No graph'
         print_status('+ Start computing OBC', print_op=print_op)
         n = self.graph.n
@@ -76,7 +76,7 @@ class OBC(BC):
                 if u is not x:
                     if delta[u] > 0.0:
                         self.bc[u] += delta[u]/n/(n-1)
-            if print_op & x % (maxval+1) == 0:
+            if print_op and (x % (maxval+1) == 0):
                 bar.update(x//100) if n > 100 else bar.update(x)
 
         if print_op:
@@ -336,7 +336,7 @@ class BBC(BC):
                             delta[preIndex] += float(delta[currentIndex] * sigmaE[preIndex]) / sigmaE[currentIndex]
                     else:
                         self.bc[u] += delta[currentIndex] / n / (n - 1)
-            if print_op & v % (maxval+1) == 0:
+            if print_op and (v % (maxval+1) == 0):
                 bar.update(v//100) if n > 100 else bar.update(v)
 
     def _compute_lbbc(self, bar, print_op=True):
@@ -372,7 +372,7 @@ class BBC(BC):
                                     l += 1
                             l = 1 / l
                             self.bc[u] += l * delta[currentIndex] / n / (n - 1)
-            if print_op & v % (maxval+1) == 0:
+            if print_op and (v % (maxval+1) == 0):
                 bar.update(v//100) if n > 100 else bar.update(v)
 
     def compute_from_seed(self, v, print_op=True):
