@@ -23,14 +23,31 @@ Code for the papers
 > Example data file
 
 ```
-	9
-	0;1
-	0;2
-	0;3
-	1;4
-	2,3;5
-	5,6;7
-	2,7;4
-	4,7;8
-	7;8
+9
+0;1
+0;2
+0;3
+1;4
+2,3;5
+5,6;7
+2,7;4
+4,7;8
+7;8
+```
+
+## Usage
+
+	python compute_bc.py [filepath] [bc option] [epsilons] [etas]
+    
+    [bc option] = obc | bbc | lbbc | slbbc
+    
+> Examples: 
+```
+python compute_bc.py data/hlmn/hlmn.txt obc
+python compute_bc.py data/hlmn/hlmn.txt bbc
+python compute_bc.py data/hlmn/hlmn.txt lbbc
+python compute_bc.py data/hlmn/hlmn.txt slbbc
+python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01
+python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01,0.005
+python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01 0.1
 ```
