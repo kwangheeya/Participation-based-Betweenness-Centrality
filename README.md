@@ -8,7 +8,11 @@ Code for the papers
 * Windows 10, Python 3.6.2 64bit
 
 ## Requirement
-* [Numpy](http://www.numpy.org/) package 
+* [numpy](http://www.numpy.org/) package 
+* [statistics] package
+* [scipy] package
+* [collections] package
+* [contextlib] package
 
 ## Data (B-hypergraph) format
 > The data used in this code are stored in folder 'src/data'.
@@ -35,17 +39,21 @@ Code for the papers
 7;8
 ```
 
+## Data 'HLMN' reference
+
+We make a B-hypergraph model of "[HLMN](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2964116/bin/msb201056-s5.xml)" data from the paper <Jerby, Livnat, Tomer Shlomi, and Eytan Ruppin. "Computational reconstruction of tissue‐specific metabolic models: application to human liver metabolism." Molecular systems biology 6.1 (2010): 401.>.
+
+
 ## Usage
 	python compute_bc.py [filepath] [bc option] [epsilons] [etas]    
-    [bc option] = obc | bbc | lbbc | slbbc
+    [bc option] = obc | pbc | lpbc | slpbc
     
 > Examples: 
 ```
-python compute_bc.py data/hlmn/hlmn.txt obc
-python compute_bc.py data/hlmn/hlmn.txt bbc
-python compute_bc.py data/hlmn/hlmn.txt lbbc
-python compute_bc.py data/hlmn/hlmn.txt slbbc
-python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01
-python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01,0.005
-python compute_bc.py data/hlmn/hlmn.txt slbbc 0.01 0.1
+        python compute_bc.py data/hlmn/hlmn.txt obc
+        python compute_bc.py data/hlmn/hlmn.txt pbc
+        python compute_bc.py data/hlmn/hlmn.txt lpbc
+        python compute_bc.py data/hlmn/hlmn.txt slpbc 0.01
+        python compute_bc.py data/hlmn/hlmn.txt slpbc 0.01,0.005
+        python compute_bc.py data/hlmn/hlmn.txt slpbc 0.01 0.1
 ```

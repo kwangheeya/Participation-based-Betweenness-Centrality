@@ -124,6 +124,7 @@ class Bhypergraph(Graph):
         self.n = 0
         self.e = []
         self.fstar = {}
+        self.bstar = {}
         if filepath:
             self.load(filepath)
 
@@ -166,6 +167,9 @@ class Bhypergraph(Graph):
                             if not (v in self.fstar):
                                 self.fstar[v] = set()
                             self.fstar[v].add(len(self.e)-1)
+                        if not (target in self.bstar):
+                            self.bstar[target] = set()
+                        self.bstar[target].add(len(self.e) - 1)
         print('\t>Load #nodes: {0}, #hyperedges : {1}'.format(self.n, len(self.e)))
 
     def remove_nodes(self, nid_list):
