@@ -2,7 +2,7 @@
 
 Code for the papers
 * "[Computing Betweenness Centrality in B-hypergraphs](http://dx.doi.org/10.1145/3132847.3133093)" published in the proceedings of the 2017 ACM on CIKM.
-* To be
+* "[Linearization of Dependency and Sampling for Participation-based Betweenness Centrality in Very Large B-hypergraphs](https://doi.org/10.1145/3375399)" published in ACM TKDD 2020.
 
 ## Environment
 * Windows 10, Python 3.6.2 64bit
