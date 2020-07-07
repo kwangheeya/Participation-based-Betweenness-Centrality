@@ -1,5 +1,7 @@
 # Participation-based Betweenness Centrality (PBC)
 
+Subtitle: Betweenness centrality in directed hypergraphs
+
 Code for the papers
 * "[Computing Betweenness Centrality in B-hypergraphs](http://dx.doi.org/10.1145/3132847.3133093)" published in the proceedings of the 2017 ACM on CIKM.
 * "[Linearization of Dependency and Sampling for Participation-based Betweenness Centrality in Very Large B-hypergraphs](https://doi.org/10.1145/3375399)" published in ACM TKDD 2020.
