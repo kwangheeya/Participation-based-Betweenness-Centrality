@@ -1,5 +1,9 @@
 # Participation-based Betweenness Centrality (PBC)
 
+
+##### Contributors: [Kwang Hee Lee](https://lekwanghee.github.io/) in Database Lab. at KAIST.
+
+
 Subtitle: Betweenness centrality in directed hypergraphs
 
 Code for the papers
